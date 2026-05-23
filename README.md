@@ -1,194 +1,134 @@
-# CookShare — Website chia sẻ công thức nấu ăn
+# CookShare - Website chia sẻ công thức nấu ăn
 
-Website đồ án xây dựng bằng **PHP thuần + MySQL**, chạy local qua **Docker Compose**.
+CookShare là đồ án website chia sẻ công thức nấu ăn xây dựng bằng **PHP thuần + MySQL**. Dự án có giao diện lấy cảm hứng từ mẫu `uiTemplates/UI-1`, tập trung vào trang chủ đẹp, danh sách công thức rõ ràng, chi tiết món ăn và bình luận từ người dùng.
 
 ## Công nghệ sử dụng
 
 - HTML, CSS, JavaScript
-- PHP 8.2 (Apache)
+- PHP 8.2 chạy trên Apache
 - MySQL 8.0
-- Docker & Docker Compose
+- Docker Compose
+- PDO, Session, `password_hash` / `password_verify`
 
-## Yêu cầu hệ thống
+## Chức năng chính
 
-- [Docker](https://docs.docker.com/get-docker/) và Docker Compose
-- Git (tùy chọn, để clone mã nguồn)
+- Xem danh sách công thức nấu ăn
+- Tìm kiếm công thức theo tên món
+- Đăng ký và đăng nhập người dùng
+- Chia sẻ công thức mới kèm ảnh upload
+- Xem chi tiết nguyên liệu, cách chế biến
+- Bình luận / góp ý cho công thức khi đã đăng nhập
 
 ## Cấu trúc thư mục
 
-```
-do-an-php/
-├── docker-compose.yml      # Cấu hình Docker (web + db)
-├── Dockerfile              # Image PHP Apache
-├── database/init.sql       # Script tạo bảng MySQL
-├── .env.example            # Mẫu biến môi trường
-└── project/                # Mã nguồn website
-    ├── index.php           # Trang chủ
-    ├── config/database.php # Kết nối PDO
-    ├── includes/           # Header, footer, auth, helper
-    ├── pages/              # Các trang chức năng
-    ├── assets/             # CSS, JS, ảnh tĩnh
-    └── uploads/            # Ảnh công thức upload
-```
-
-## Chạy dự án trên máy local
-
-### Bước 1: Clone hoặc mở thư mục dự án
-
-```bash
-cd do-an-php
+```text
+do-an-cook-share/
+├── docker-compose.yml
+├── Dockerfile
+├── database/
+│   ├── init.sql          # Tạo bảng users, recipes, comments
+│   └── seed_demo.sql     # Dữ liệu demo: 2 user, 10 công thức, bình luận
+├── project/
+│   ├── index.php
+│   ├── config/database.php
+│   ├── includes/
+│   ├── pages/
+│   ├── assets/
+│   └── uploads/
+│       ├── .gitkeep
+│       └── seed/         # Ảnh mẫu dùng cho dữ liệu seed
+└── requirement.md
 ```
 
-### Bước 2: Cấp quyền ghi cho thư mục upload
+## Chạy dự án bằng Docker
 
-Thư mục `uploads/` cần quyền ghi để Apache lưu ảnh công thức:
-
-```bash
-chmod 777 project/uploads
-```
-
-### Bước 3: Khởi chạy Docker
+Từ thư mục gốc dự án:
 
 ```bash
 docker compose up -d --build
 ```
 
-Lần chạy đầu tiên Docker sẽ:
-- Build image PHP Apache
-- Tải image MySQL 8.0
-- Tạo database và 3 bảng từ `database/init.sql`
+Truy cập website:
 
-### Bước 4: Truy cập website
-
-Mở trình duyệt:
-
-```
+```text
 http://localhost:8081
 ```
 
-> **Lưu ý:** Dự án map port **8081** (host) → **80** (container).  
-> Nếu port 8081 bị chiếm, sửa `ports` trong `docker-compose.yml` (ví dụ `"8082:80"`) rồi chạy lại `docker compose up -d`.
-
-### Bước 5: Kiểm tra container đang chạy
+Kiểm tra container:
 
 ```bash
 docker compose ps
 ```
 
-Kết quả mong đợi: service `web` và `db` đều ở trạng thái **Up**, `db` **healthy**.
-
-### Dừng dự án
+Dừng container:
 
 ```bash
 docker compose down
 ```
 
-Dữ liệu MySQL vẫn được giữ trong Docker volume `mysql_data`. Muốn xóa sạch dữ liệu:
+Xóa sạch volume database để tạo DB mới từ đầu:
 
 ```bash
 docker compose down -v
 ```
 
-## Thông tin kết nối database
+## Thông tin database
 
 | Thông tin | Giá trị |
-|-----------|---------|
-| Host (trong Docker) | `db` |
-| Host (từ máy local) | `localhost` |
+|---|---|
+| Host trong Docker | `db` |
+| Host từ máy local | `localhost` |
 | Port | `3306` |
 | Database | `recipe_db` |
 | User | `recipe_user` |
 | Password | `recipe_pass` |
 | Root password | `root_pass` |
 
-Kết nối bằng MySQL client (tùy chọn):
+## Import dữ liệu seed bằng CLI Docker
+
+File `database/seed_demo.sql` dùng cho demo và sẽ **xóa dữ liệu hiện có** trong 3 bảng `comments`, `recipes`, `users` trước khi insert dữ liệu mẫu.
+
+### Cách khuyến nghị trên mọi shell
+
+Chạy Docker trước:
 
 ```bash
-docker exec -it do-an-php-db-1 mysql -urecipe_user -precipe_pass recipe_db
+docker compose up -d --build
 ```
 
-## Các trang chính
+Copy file seed vào container MySQL:
 
-| URL | Chức năng |
-|-----|-----------|
-| `/` | Trang chủ — danh sách công thức, tìm kiếm |
-| `/pages/recipes.php` | Danh sách công thức |
-| `/pages/recipe-detail.php?id=1` | Chi tiết công thức + bình luận |
-| `/pages/add-recipe.php` | Chia sẻ công thức (cần đăng nhập) |
-| `/pages/register.php` | Đăng ký tài khoản |
-| `/pages/login.php` | Đăng nhập |
-| `/pages/logout.php` | Đăng xuất |
-
-## Luồng trình bày đồ án (demo)
-
-Dưới đây là kịch bản demo gợi ý khi bảo vệ, bám sát đúng yêu cầu đề bài.
-
-### 1. Giới thiệu tổng quan (1–2 phút)
-
-- **Mục tiêu:** Website chia sẻ công thức nấu ăn
-- **Chức năng chính:**
-  - Xem và tìm kiếm công thức
-  - Đăng ký / đăng nhập thành viên
-  - Chia sẻ công thức mới (có upload ảnh)
-  - Góp ý / bình luận về công thức
-- **Công nghệ:** PHP thuần, MySQL, HTML/CSS/JS, Docker
-
-### 2. Trình bày kiến trúc hệ thống (2–3 phút)
-
-```
-Trình duyệt → Apache/PHP (container web) → MySQL (container db)
-                              ↓
-                        uploads/ (lưu ảnh)
+```bash
+docker compose cp database/seed_demo.sql db:/tmp/seed_demo.sql
 ```
 
-- **Frontend:** HTML, CSS, JavaScript (validate form phía client)
-- **Backend:** PHP xử lý logic, Session quản lý đăng nhập
-- **Database:** 3 bảng `users`, `recipes`, `comments`
-- **Bảo mật cơ bản:** `password_hash`, prepared statement (PDO), `htmlspecialchars`
+Import seed:
 
-### 3. Demo chức năng (5–7 phút)
+```bash
+docker compose exec db mysql --default-character-set=utf8mb4 -urecipe_user -precipe_pass recipe_db -e "source /tmp/seed_demo.sql"
+```
 
-Thực hiện tuần tự trên trình duyệt:
+Kiểm tra nhanh dữ liệu:
 
-#### Bước A — Trang chủ & tìm kiếm
+```bash
+docker compose exec db mysql --default-character-set=utf8mb4 -urecipe_user -precipe_pass recipe_db -e "SELECT id, username, fullname FROM users; SELECT id, user_id, title, image FROM recipes;"
+```
 
-1. Mở `http://localhost:8081`
-2. Giới thiệu header: Trang chủ, Công thức, Chia sẻ, Đăng nhập/Đăng ký
-3. Giải thích danh sách công thức: ảnh, tên món, mô tả, người đăng
-4. Demo **tìm kiếm theo tên món** trên thanh search
+### Cách dùng redirection trên Git Bash / Linux / macOS
 
-#### Bước B — Đăng ký & đăng nhập
+```bash
+docker compose exec -T db mysql --default-character-set=utf8mb4 -urecipe_user -precipe_pass recipe_db < database/seed_demo.sql
+```
 
-1. Vào **Đăng ký**, nhập:
-   - Họ tên, email, username, mật khẩu, xác nhận mật khẩu
-2. Giải thích **validate JavaScript** (không để trống, email đúng định dạng, mật khẩu khớp)
-3. Submit → hệ thống lưu user vào MySQL (mật khẩu đã hash)
-4. **Đăng nhập** bằng username vừa tạo → session được tạo, header hiện "Xin chào, ..."
+## Import database bằng phpMyAdmin trên máy khác
 
-#### Bước C — Chia sẻ công thức
-
-1. Vào **Chia sẻ công thức**
-2. Nhập: tên món, mô tả, nguyên liệu, cách chế biến
-3. **Upload ảnh** món ăn (JPG/PNG/WEBP, tối đa 2MB)
-4. Submit → dữ liệu lưu vào bảng `recipes`, ảnh lưu trong `uploads/`
-5. Quay lại trang chủ → công thức mới xuất hiện
-
-#### Bước D — Xem chi tiết & bình luận
-
-1. Bấm **Xem chi tiết** một công thức
-2. Trình bày: tên món, ảnh, người đăng, nguyên liệu, cách làm
-3. Phần **góp ý / bình luận:**
-   - Đăng xuất → vào lại trang chi tiết → **không gửi được bình luận** (chỉ hiện thông báo đăng nhập)
-   - Đăng nhập lại → nhập bình luận → gửi → hiện trong danh sách
-
-#### Bước E — Trang danh sách công thức
-
-1. Vào menu **Công thức**
-2. Demo lại tìm kiếm và xem chi tiết
-
-### 4. Trình bày database (2–3 phút)
-
-Mở MySQL và show 3 bảng:
+1. Mở phpMyAdmin.
+2. Tạo database mới tên `recipe_db`.
+3. Chọn charset/collation UTF-8, ví dụ `utf8mb4_unicode_ci`.
+4. Chọn database `recipe_db`.
+5. Vào tab **Import**, chọn file `database/init.sql`, bấm **Import** để tạo bảng.
+6. Tiếp tục vào tab **Import**, chọn file `database/seed_demo.sql`, bấm **Import** để thêm dữ liệu demo.
+7. Kiểm tra 3 bảng:
 
 ```sql
 SELECT * FROM users;
@@ -196,29 +136,107 @@ SELECT * FROM recipes;
 SELECT * FROM comments;
 ```
 
+## Tài khoản demo
+
+| User ID | Họ tên | Username | Email | Mật khẩu |
+|---:|---|---|---|---|
+| 1 | Nguyễn Mai An | `maian` | `maian@cookshare.local` | `123456` |
+| 2 | Trần Nam Bếp | `nambep` | `nambep@cookshare.local` | `123456` |
+
+## Dữ liệu seed
+
+| ID | Công thức | Người đăng | Ảnh |
+|---:|---|---|---|
+| 1 | Pizza phô mai kéo sợi | Nguyễn Mai An | `seed/pizza.jpg` |
+| 2 | Phở bò tái thơm gừng | Nguyễn Mai An | `seed/pho.jpg` |
+| 3 | Lẩu nấm chua cay | Nguyễn Mai An | `seed/kichi.jpg` |
+| 4 | Cà phê sữa đá kem muối | Nguyễn Mai An | `seed/coffee.jpg` |
+| 5 | Bữa tiệc gia đình cuối tuần | Nguyễn Mai An | `seed/anhnhahang.jpg` |
+| 6 | Bò nướng kiểu Hàn tại nhà | Trần Nam Bếp | `seed/gogi.jpg` |
+| 7 | Lẩu Đài Loan cay nhẹ | Trần Nam Bếp | `seed/manwah.jpg` |
+| 8 | Mì Ý sốt bò bằm | Trần Nam Bếp | `seed/pizza.jpg` |
+| 9 | Phở cuốn thịt bò | Trần Nam Bếp | `seed/pho.jpg` |
+| 10 | Gà áp chảo sốt cam | Trần Nam Bếp | `seed/kichi.jpg` |
+
+Seed cũng tạo 12 bình luận mẫu để trang chi tiết công thức có nội dung trao đổi giữa 2 tài khoản demo.
+
+## Các URL chính
+
+| URL | Chức năng |
+|---|---|
+| `/` | Trang chủ, hero, tìm kiếm, công thức mới nhất |
+| `/pages/recipes.php` | Danh sách công thức |
+| `/pages/recipe-detail.php?id=1` | Chi tiết công thức và bình luận |
+| `/pages/add-recipe.php` | Chia sẻ công thức, yêu cầu đăng nhập |
+| `/pages/register.php` | Đăng ký |
+| `/pages/login.php` | Đăng nhập |
+| `/pages/logout.php` | Đăng xuất |
+
+## Kịch bản trình bày đồ án
+
+### 1. Giới thiệu tổng quan
+
+- Tên đề tài: Website chia sẻ công thức nấu ăn CookShare.
+- Mục tiêu: người dùng có thể xem, tìm kiếm, chia sẻ và góp ý công thức.
+- Công nghệ: PHP thuần, MySQL, HTML/CSS/JS, Docker Compose.
+
+### 2. Trình bày kiến trúc
+
+```text
+Browser -> Apache/PHP container -> MySQL container
+                         |
+                         -> project/uploads lưu ảnh upload và ảnh seed
+```
+
+- Frontend: HTML, CSS, JavaScript validate form.
+- Backend: PHP xử lý request, session đăng nhập, PDO truy vấn MySQL.
+- Database: 3 bảng `users`, `recipes`, `comments`.
+- Bảo mật cơ bản: prepared statement, escape output bằng `htmlspecialchars`, mật khẩu hash.
+
+### 3. Demo chức năng
+
+1. Mở `http://localhost:8081`.
+2. Giới thiệu trang chủ, hero, danh sách công thức mới nhất.
+3. Tìm kiếm món, ví dụ `phở`, `pizza`, `lẩu`.
+4. Đăng nhập bằng `maian` / `123456`.
+5. Vào chi tiết công thức, gửi bình luận.
+6. Vào trang chia sẻ công thức, nhập món mới và upload ảnh.
+7. Đăng xuất, vào lại chi tiết để cho thấy người chưa đăng nhập không gửi được bình luận.
+
+### 4. Demo database
+
+Chạy trong CLI:
+
+```bash
+docker compose exec db mysql --default-character-set=utf8mb4 -urecipe_user -precipe_pass recipe_db
+```
+
+Các câu lệnh SQL minh họa:
+
+```sql
+SELECT id, fullname, username FROM users;
+SELECT id, user_id, title, image FROM recipes;
+SELECT id, recipe_id, user_id, content FROM comments;
+```
+
 Giải thích quan hệ:
-- `recipes.user_id` → `users.id` (ai đăng công thức)
-- `comments.recipe_id` → `recipes.id` (bình luận thuộc công thức nào)
-- `comments.user_id` → `users.id` (ai bình luận)
 
-### 5. Kết luận & Q&A (1–2 phút)
-
-- Tóm tắt: đã đáp ứng đủ yêu cầu đề (đăng bài, chia sẻ, góp ý)
-- Nêu hướng mở rộng có thể làm thêm (nếu giảng viên hỏi): sửa/xóa công thức, phân trang, admin...
+- `recipes.user_id` tham chiếu `users.id`.
+- `comments.recipe_id` tham chiếu `recipes.id`.
+- `comments.user_id` tham chiếu `users.id`.
 
 ## Xử lý lỗi thường gặp
 
 | Lỗi | Cách xử lý |
-|-----|------------|
-| Port bị chiếm | Đổi port trong `docker-compose.yml`, chạy lại `docker compose up -d` |
-| Upload ảnh thất bại | Chạy `chmod 777 project/uploads` |
-| Trang trắng / lỗi DB | Kiểm tra `docker compose ps`, đợi MySQL healthy rồi refresh |
-| Muốn reset database | `docker compose down -v` rồi `docker compose up -d --build` |
+|---|---|
+| Port `8081` bị chiếm | Đổi port trong `docker-compose.yml`, ví dụ `"8082:80"` |
+| Database chưa có bảng | Import `database/init.sql` hoặc chạy lại Docker với volume mới |
+| Muốn reset dữ liệu demo | Import lại `database/seed_demo.sql` |
+| Ảnh upload không lưu được | Kiểm tra quyền ghi thư mục `project/uploads` |
+| MySQL chưa sẵn sàng | Chạy `docker compose ps`, đợi service `db` healthy |
 
-## Tài khoản demo (tùy chọn)
+## Ghi chú
 
-Sau khi chạy dự án, tự tạo tài khoản qua trang **Đăng ký** để demo. Không có tài khoản mặc định sẵn trong database.
-
-## Tài liệu tham khảo
-
-- Chi tiết yêu cầu đề bài: [requirement.md](requirement.md)
+- Dự án bám đúng yêu cầu đồ án, không có admin, phân trang hay CRUD nâng cao.
+- Ảnh demo nằm trong `project/uploads/seed/` để dữ liệu seed hoạt động ngay sau khi import.
+- File `database/seed_demo.sql` chỉ dùng cho demo vì có thao tác reset dữ liệu trong 3 bảng chính.

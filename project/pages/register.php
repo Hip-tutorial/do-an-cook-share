@@ -66,7 +66,9 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="form-section">
+    <span class="eyebrow">Bắt đầu chia sẻ</span>
     <h1>Đăng ký tài khoản</h1>
+    <p class="form-intro">Tạo tài khoản để lưu dấu những món ngon của bạn trong cộng đồng CookShare.</p>
 
     <?php if (!empty($errors)): ?>
         <ul class="alert alert-error">

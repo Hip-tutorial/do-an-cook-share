@@ -81,7 +81,9 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="form-section">
+    <span class="eyebrow">Gửi món ngon</span>
     <h1>Chia sẻ công thức</h1>
+    <p class="form-intro">Điền đầy đủ thông tin để cộng đồng có thể nấu lại món ăn của bạn một cách dễ dàng.</p>
 
     <?php if (!empty($errors)): ?>
         <ul class="alert alert-error">

@@ -69,20 +69,27 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <article class="recipe-detail">
-    <h1><?= e($recipe['title']) ?></h1>
-    <img class="recipe-detail-image" src="<?= e(imageUrl($recipe['image'])) ?>" alt="<?= e($recipe['title']) ?>">
-    <p class="recipe-author">Người đăng: <?= e($recipe['author_name']) ?></p>
-    <p class="recipe-desc"><?= e($recipe['description']) ?></p>
+    <div class="detail-hero">
+        <img class="recipe-detail-image" src="<?= e(imageUrl($recipe['image'])) ?>" alt="<?= e($recipe['title']) ?>">
+        <div class="detail-summary">
+            <span class="eyebrow">Chi tiết công thức</span>
+            <h1><?= e($recipe['title']) ?></h1>
+            <p class="detail-meta">Người đăng: <?= e($recipe['author_name']) ?> · <?= e(date('d/m/Y', strtotime($recipe['created_at']))) ?></p>
+            <p><?= e($recipe['description']) ?></p>
+        </div>
+    </div>
 
-    <section class="recipe-block">
-        <h2>Nguyên liệu</h2>
-        <div class="recipe-text"><?= nl2br(e($recipe['ingredients'])) ?></div>
-    </section>
+    <div class="recipe-content-grid">
+        <section class="recipe-block">
+            <h2>Nguyên liệu</h2>
+            <div class="recipe-text"><?= nl2br(e($recipe['ingredients'])) ?></div>
+        </section>
 
-    <section class="recipe-block">
-        <h2>Cách chế biến</h2>
-        <div class="recipe-text"><?= nl2br(e($recipe['steps'])) ?></div>
-    </section>
+        <section class="recipe-block">
+            <h2>Cách chế biến</h2>
+            <div class="recipe-text"><?= nl2br(e($recipe['steps'])) ?></div>
+        </section>
+    </div>
 </article>
 
 <section class="comments-section" id="comments">
@@ -123,6 +130,6 @@ require_once __DIR__ . '/../includes/header.php';
     <?php endif; ?>
 </section>
 
-<p><a href="<?= baseUrl('pages/recipes.php') ?>" class="btn btn-secondary">&larr; Quay lại danh sách</a></p>
+<p class="back-actions"><a href="<?= baseUrl('pages/recipes.php') ?>" class="btn btn-secondary">&larr; Quay lại danh sách</a></p>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

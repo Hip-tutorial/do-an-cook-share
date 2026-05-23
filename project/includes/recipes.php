@@ -29,7 +29,7 @@ function fetchRecipes(PDO $db, string $keyword = ''): array
 function renderRecipeCards(array $recipes): void
 {
     if (empty($recipes)) {
-        echo '<p class="empty-message">Không tìm thấy công thức nào.</p>';
+        echo '<p class="empty-message">Không tìm thấy công thức nào phù hợp.</p>';
         return;
     }
 
@@ -37,13 +37,15 @@ function renderRecipeCards(array $recipes): void
     foreach ($recipes as $recipe) {
         ?>
         <article class="recipe-card">
-            <img src="<?= e(imageUrl($recipe['image'])) ?>" alt="<?= e($recipe['title']) ?>">
+            <a class="recipe-card-media" href="<?= baseUrl('pages/recipe-detail.php?id=' . (int) $recipe['id']) ?>">
+                <img src="<?= e(imageUrl($recipe['image'])) ?>" alt="<?= e($recipe['title']) ?>">
+            </a>
             <div class="recipe-card-body">
+                <p class="recipe-author">Từ bếp của <?= e($recipe['author_name']) ?></p>
                 <h3><?= e($recipe['title']) ?></h3>
                 <p class="recipe-desc"><?= e($recipe['description']) ?></p>
-                <p class="recipe-author">Người đăng: <?= e($recipe['author_name']) ?></p>
                 <a class="btn btn-primary" href="<?= baseUrl('pages/recipe-detail.php?id=' . (int) $recipe['id']) ?>">
-                    Xem chi tiết
+                    Xem công thức
                 </a>
             </div>
         </article>
@@ -56,7 +58,8 @@ function renderSearchForm(string $keyword, string $action): void
 {
     ?>
     <form class="search-form" method="GET" action="<?= e($action) ?>">
-        <input type="text" name="q" placeholder="Tìm kiếm theo tên món..." value="<?= e($keyword) ?>">
+        <label class="sr-only" for="recipe-search">Tìm kiếm công thức</label>
+        <input id="recipe-search" type="text" name="q" placeholder="Tìm kiếm theo tên món..." value="<?= e($keyword) ?>">
         <button type="submit" class="btn btn-primary">Tìm kiếm</button>
     </form>
     <?php

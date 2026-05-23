@@ -42,7 +42,9 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="form-section">
+    <span class="eyebrow">Thành viên CookShare</span>
     <h1>Đăng nhập</h1>
+    <p class="form-intro">Truy cập tài khoản để chia sẻ công thức và gửi bình luận cho món ăn yêu thích.</p>
 
     <?php if ($successMessage !== ''): ?>
         <p class="alert alert-success"><?= e($successMessage) ?></p>
