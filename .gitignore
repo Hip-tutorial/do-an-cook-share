@@ -3,4 +3,4 @@ project/uploads/*
 !project/uploads/.gitkeep
 !project/uploads/seed/
 !project/uploads/seed/**
-uiTemplates/*
+# uiTemplates/*
