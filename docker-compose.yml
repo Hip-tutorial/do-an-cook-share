@@ -1,0 +1,36 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8081:80"
+    volumes:
+      - ./project:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_NAME: recipe_db
+      DB_USER: recipe_user
+      DB_PASS: recipe_pass
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: recipe_db
+      MYSQL_USER: recipe_user
+      MYSQL_PASSWORD: recipe_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_pass"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:
