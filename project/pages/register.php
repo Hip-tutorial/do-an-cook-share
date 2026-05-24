@@ -56,8 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'password' => $hashedPassword,
             ]);
 
-            header('Location: /pages/login.php?registered=1');
-            exit;
+            redirectTo('pages/login.php?registered=1');
         }
     }
 }

@@ -72,8 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'steps' => $old['steps'],
         ]);
 
-        header('Location: /pages/recipe-detail.php?id=' . $db->lastInsertId());
-        exit;
+        redirectTo('pages/recipe-detail.php?id=' . $db->lastInsertId());
     }
 }
 

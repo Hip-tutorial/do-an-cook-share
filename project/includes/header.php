@@ -2,7 +2,9 @@
 require_once __DIR__ . '/auth.php';
 
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-$isHome = $currentPath === '/';
+$homeBase = rtrim(appBasePath(), '/') ?: '';
+$isHome = rtrim($currentPath, '/') === $homeBase
+    || rtrim($currentPath, '/') === ($homeBase === '' ? 'index.php' : $homeBase . '/index.php');
 $isRecipes = str_contains($currentPath, '/pages/recipes.php') || str_contains($currentPath, '/pages/recipe-detail.php');
 $isAddRecipe = str_contains($currentPath, '/pages/add-recipe.php');
 ?>

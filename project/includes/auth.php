@@ -16,8 +16,7 @@ function isLoggedIn(): bool
 function requireLogin(): void
 {
     if (!isLoggedIn()) {
-        header('Location: /pages/login.php');
-        exit;
+        redirectTo('pages/login.php');
     }
 }
 
@@ -36,9 +35,49 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
+function appBasePath(): string
+{
+    static $base = null;
+
+    if ($base !== null) {
+        return $base;
+    }
+
+    $docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+    $appRoot = rtrim(str_replace('\\', '/', realpath(dirname(__DIR__)) ?: ''), '/');
+
+    $isUnderDocRoot = $docRoot !== '' && (
+        PHP_OS_FAMILY === 'Windows'
+            ? stripos($appRoot, $docRoot) === 0
+            : str_starts_with($appRoot, $docRoot)
+    );
+
+    if ($isUnderDocRoot) {
+        $base = substr($appRoot, strlen($docRoot));
+        $base = rtrim($base, '/');
+    } else {
+        $base = '';
+    }
+
+    return $base;
+}
+
 function baseUrl(string $path = ''): string
 {
-    return '/' . ltrim($path, '/');
+    $base = appBasePath();
+    $path = ltrim($path, '/');
+
+    if ($path === '') {
+        return $base === '' ? '/' : $base . '/';
+    }
+
+    return ($base === '' ? '' : $base) . '/' . $path;
+}
+
+function redirectTo(string $path = ''): never
+{
+    header('Location: ' . baseUrl($path));
+    exit;
 }
 
 function imageUrl(?string $image): string

@@ -4,8 +4,7 @@ require_once __DIR__ . '/../includes/auth.php';
 
 $recipeId = (int) ($_GET['id'] ?? 0);
 if ($recipeId <= 0) {
-    header('Location: /pages/recipes.php');
-    exit;
+    redirectTo('pages/recipes.php');
 }
 
 $db = getDB();
@@ -14,8 +13,7 @@ $db = getDB();
 $commentErrors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['content'])) {
     if (!isLoggedIn()) {
-        header('Location: /pages/login.php');
-        exit;
+        redirectTo('pages/login.php');
     }
 
     $content = trim($_POST['content'] ?? '');
@@ -31,8 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['content'])) {
             'content' => $content,
         ]);
 
-        header('Location: /pages/recipe-detail.php?id=' . $recipeId . '#comments');
-        exit;
+        redirectTo('pages/recipe-detail.php?id=' . $recipeId . '#comments');
     }
 }
 
@@ -48,8 +45,7 @@ $stmt->execute(['id' => $recipeId]);
 $recipe = $stmt->fetch();
 
 if (!$recipe) {
-    header('Location: /pages/recipes.php');
-    exit;
+    redirectTo('pages/recipes.php');
 }
 
 // Fetch comments

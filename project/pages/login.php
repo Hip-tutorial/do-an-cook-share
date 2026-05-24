@@ -3,8 +3,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 
 if (isLoggedIn()) {
-    header('Location: /');
-    exit;
+    redirectTo();
 }
 
 $pageTitle = 'Đăng nhập';
@@ -28,8 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['fullname'] = $user['fullname'];
 
-            header('Location: /');
-            exit;
+            redirectTo();
         }
 
         $errors[] = 'Tên đăng nhập hoặc mật khẩu không đúng.';
